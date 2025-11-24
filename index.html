@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Puce</title>
-
     <!-- Gaegu font -->
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
 
@@ -16,15 +15,31 @@
             align-items: center;
             flex-direction: column;
             font-family: 'Gaegu', cursive;
-            cursor: pointer;
+            cursor: default;
             color: white;
             position: relative;
+            overflow: hidden;
         }
 
-        /* Main puce text hover effect */
+        /* Background GIF */
+        #gifBackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+            pointer-events: none;
+        }
+
         #centerText {
             font-size: 48px;
             transition: transform 0.3s, color 0.3s;
+            cursor: pointer;
         }
 
         #centerText.hover-effect:hover {
@@ -86,9 +101,48 @@
             display: none;
             text-align: center;
         }
+
+        #prevSong:hover,
+        #nextSong:hover,
+        #prevPhoto:hover,
+        #nextPhoto:hover {
+            transform: scale(1.15);
+            animation: rainbow 3s infinite linear;
+        }
+
+        #photoViewer {
+            display:none;
+            flex-direction:column;
+            align-items:center;
+            margin-top:20px;
+            text-align:center;
+            font-size:22px;
+        }
+
+        #photoViewer img {
+            max-width: 60vw;
+            max-height: 55vh;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        #photoTitle {
+            font-size: 26px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        #photoDesc {
+            font-size: 18px;
+            font-weight: normal;
+            margin-top: 5px;
+        }
     </style>
 </head>
+
 <body>
+
+<div id="gifBackground"></div>
 
 <div id="returnBtn">← return</div>
 
@@ -97,6 +151,7 @@
 <div id="definition">
 adjective
 of a dark red or purple-brown color.
+"his face was puce with rage and frustration"
 noun
 a dark red or purple-brown color.
 noun
@@ -104,13 +159,15 @@ my dog's name :)
 </div>
 
 <div id="options">
-    <div class="option" id="photoPortfolio">photo portfolio</div>
+    <div class="option" id="photos">photos</div>
     <div class="option" id="music">music</div>
 </div>
 
-<div id="musicNote">every song here is a work in progress and will be uploaded to streaming services soon &lt;3</div>
+<div id="musicNote">
+    every song here is a work in progress and will be uploaded to streaming services soon &lt;3
+</div>
 
-<!-- 🎵 MUSIC PLAYER (Hidden until music is clicked) -->
+<!-- MUSIC PLAYER -->
 <div id="musicPlayer" style="display:none; flex-direction:column; align-items:center; font-size:22px; margin-top:20px;">
     <div style="display:flex; align-items:center; gap:20px;">
         <span id="prevSong" class="option" style="cursor:pointer;">⬅</span>
@@ -119,9 +176,21 @@ my dog's name :)
     </div>
 
     <audio id="audioPlayer" controls style="margin-top:15px;">
-        <source id="audioSource" src="storyofmylife_2.mp3" type="audio/mpeg">
+        <source id="audioSource" src="" type="audio/mpeg">
         Your browser does not support audio playback.
     </audio>
+</div>
+
+<!-- PHOTOS -->
+<div id="photoViewer">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <span id="prevPhoto" class="option" style="cursor:pointer;">⬅</span>
+        <span id="nextPhoto" class="option" style="cursor:pointer;">➡</span>
+    </div>
+
+    <img id="photoDisplay" src="">
+    <div id="photoTitle"></div>
+    <div id="photoDesc"></div>
 </div>
 
 <script>
@@ -130,14 +199,15 @@ my dog's name :)
     const options = document.getElementById("options");
     const returnBtn = document.getElementById("returnBtn");
     const musicNote = document.getElementById("musicNote");
+    const musicPlayer = document.getElementById("musicPlayer");
+    const photoViewer = document.getElementById("photoViewer");
+    const gifBackground = document.getElementById("gifBackground");
 
     let currentPage = "home";
 
-    document.body.onclick = (event) => {
-        if (event.target.id === "returnBtn") return;
-        if (event.target.classList.contains("option")) return;
+    /* OPEN MENU */
+    centerText.onclick = () => {
         if (currentPage !== "home") return;
-
         centerText.style.display = "none";
         definition.style.display = "none";
         options.style.display = "block";
@@ -145,12 +215,21 @@ my dog's name :)
         currentPage = "menu";
     };
 
+    /* RETURN BUTTON */
     returnBtn.onclick = () => {
-        audioPlayer.pause(); // ⬅ Stop music on return
+        audioPlayer.pause();
+        gifBackground.style.opacity = 0;
 
         if (currentPage === "music") {
             musicPlayer.style.display = "none";
             musicNote.style.display = "none";
+            options.style.display = "block";
+            currentPage = "menu";
+            return;
+        }
+
+        if (currentPage === "photos") {
+            photoViewer.style.display = "none";
             options.style.display = "block";
             currentPage = "menu";
             return;
@@ -165,18 +244,27 @@ my dog's name :)
         }
     };
 
-    document.getElementById("photoPortfolio").onclick = () => {
-        alert("Photo portfolio clicked!");
-    };
-
-    /* 🎵 MUSIC PLAYER */
+    /* MUSIC */
     const musicBtn = document.getElementById("music");
-    const musicPlayer = document.getElementById("musicPlayer");
     const audioPlayer = document.getElementById("audioPlayer");
     const songTitle = document.getElementById("songTitle");
 
     const tracks = [
-        { title: "Story of My Life", file: "storyofmylife_2.mp3" }
+        { 
+            title: "And It Shall (Draft #1)", 
+            file: "and%20it%20shall%20(draft%20%231).mp3",
+            bg: "https://33.media.tumblr.com/a9527dc80ee138b03af638e1bceb75f5/tumblr_nmeg7225F11qg39ewo1_500.gif"
+        },
+        { 
+            title: "Story of My Life", 
+            file: "storyofmylife_2.mp3",
+            bg: "https://i.pinimg.com/originals/7a/63/d4/7a63d4c91a83613b8088c9cde3f3ceaf.gif"
+        },
+        { 
+            title: "MMM (Other Version)", 
+            file: "mmm_2otherversion.mp3",
+            bg: "mmmbackground.gif"
+        }
     ];
 
     let index = 0;
@@ -185,10 +273,27 @@ my dog's name :)
         audioPlayer.src = tracks[i].file;
         songTitle.innerText = tracks[i].title;
         audioPlayer.load();
+
+        gifBackground.style.opacity = 0;
+
+        if (tracks[i].bg) {
+            gifBackground.style.backgroundImage = `url('${tracks[i].bg}')`;
+        }
     }
+
+    audioPlayer.onplay = () => {
+        if (tracks[index].bg) {
+            gifBackground.style.opacity = 0.4;
+        }
+    };
+
+    audioPlayer.onpause = () => {
+        gifBackground.style.opacity = 0;
+    };
 
     musicBtn.onclick = () => {
         options.style.display = "none";
+        returnBtn.style.display = "block";
         musicPlayer.style.display = "flex";
         musicNote.style.display = "block";
         loadTrack(index);
@@ -198,13 +303,51 @@ my dog's name :)
     document.getElementById("prevSong").onclick = () => {
         index = (index - 1 + tracks.length) % tracks.length;
         loadTrack(index);
-        audioPlayer.play();
     };
 
     document.getElementById("nextSong").onclick = () => {
         index = (index + 1) % tracks.length;
         loadTrack(index);
-        audioPlayer.play();
+    };
+
+    /* PHOTOS */
+    const photoBtn = document.getElementById("photos");
+    const photoDisplay = document.getElementById("photoDisplay");
+    const photoTitle = document.getElementById("photoTitle");
+    const photoDesc = document.getElementById("photoDesc");
+
+    const photos = [
+        { 
+          title: "Houndsune Miku", 
+          file: "houndsune%20miku.jpg", 
+          desc: "September 9, 2024. Friend had made this at school" 
+        }
+    ];
+
+    let pIndex = 0;
+
+    function loadPhoto(i) {
+        photoDisplay.src = photos[i].file;
+        photoTitle.innerText = photos[i].title;
+        photoDesc.innerText = photos[i].desc;
+    }
+
+    photoBtn.onclick = () => {
+        options.style.display = "none";
+        returnBtn.style.display = "block";
+        photoViewer.style.display = "flex";
+        loadPhoto(pIndex);
+        currentPage = "photos";
+    };
+
+    document.getElementById("prevPhoto").onclick = () => {
+        pIndex = (pIndex - 1 + photos.length) % photos.length;
+        loadPhoto(pIndex);
+    };
+
+    document.getElementById("nextPhoto").onclick = () => {
+        pIndex = (pIndex + 1) % photos.length;
+        loadPhoto(pIndex);
     };
 </script>
 
