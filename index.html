@@ -21,6 +21,17 @@
             overflow: hidden;
         }
 
+        /* Arrow image pointing at "puce" */
+        #clickArrow {
+            position: absolute;
+            top: 23%;
+            left: 42%;
+            width: 150px;
+            opacity: 1;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out;
+        }
+
         /* Background GIF */
         #gifBackground {
             position: fixed;
@@ -95,52 +106,146 @@
             color: white;
         }
 
-        #musicNote {
-            margin-bottom: 10px;
-            font-size: 18px;
+        /* Cover Flow container */
+        #coverflowContainer {
             display: none;
-            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
         }
 
-        #prevSong:hover,
-        #nextSong:hover,
-        #prevPhoto:hover,
-        #nextPhoto:hover {
-            transform: scale(1.15);
-            animation: rainbow 3s infinite linear;
+        /* Cover Flow track */
+        #coverflowTrack {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80vw;
+            height: 50vh;
+            position: relative;
+            overflow: visible;
         }
 
-        #photoViewer {
-            display:none;
-            flex-direction:column;
-            align-items:center;
-            margin-top:20px;
-            text-align:center;
-            font-size:22px;
-        }
-
-        #photoViewer img {
-            max-width: 60vw;
-            max-height: 55vh;
+        .coverItem {
+            position: absolute;
+            transition: all 0.6s ease;
             border-radius: 10px;
-            margin-bottom: 10px;
+            max-height: 50vh;
+            max-width: 22vw;
         }
 
+        /* Title + desc under center image */
         #photoTitle {
             font-size: 26px;
             font-weight: bold;
-            margin-top: 5px;
+            margin-top: 15px;
+            text-align: center;
         }
 
         #photoDesc {
             font-size: 18px;
-            font-weight: normal;
             margin-top: 5px;
+            text-align: center;
+            width: 60vw;
+        }
+
+        /* Nav arrows */
+        #prevPhoto, #nextPhoto {
+            cursor: pointer;
+            margin: 0 40px;
+            font-size: 40px;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        #prevPhoto:hover, #nextPhoto:hover {
+            transform: scale(1.2);
+            animation: rainbow 3s infinite linear;
+        }
+
+        /* Cover Flow position styles */
+        .leftItem {
+            transform: translateX(-22vw) rotateY(50deg) scale(0.7);
+            opacity: 0.6;
+        }
+
+        .rightItem {
+            transform: translateX(22vw) rotateY(-50deg) scale(0.7);
+            opacity: 0.6;
+        }
+
+        .centerItem {
+            transform: translateX(0) rotateY(0deg) scale(1);
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* Lightbox overlay (dark background) */
+        #lightboxOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        /* Lightbox popup box */
+        #lightboxContent {
+            position: relative;
+            background: #111;
+            padding: 12px;
+            border-radius: 18px;
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.45);
+            max-width: 70vw;
+            max-height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Enlarged image */
+        #lightboxImage {
+            max-width: 68vw;
+            max-height: 68vh;
+            border-radius: 14px;
+        }
+
+        /* Close button */
+        #lightboxClose {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #333;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s;
+        }
+
+        #lightboxClose:hover {
+            background: #555;
         }
     </style>
 </head>
 
 <body>
+
+<!-- Lightbox popup -->
+<div id="lightboxOverlay">
+    <div id="lightboxContent">
+        <span id="lightboxClose">✕</span>
+        <img id="lightboxImage" src="">
+    </div>
+</div>
+
+<img id="clickArrow" src="clickmearrowreal.jpg">
 
 <div id="gifBackground"></div>
 
@@ -163,11 +268,27 @@ my dog's name :)
     <div class="option" id="music">music</div>
 </div>
 
-<div id="musicNote">
+<!-- COVER FLOW PHOTO VIEWER -->
+<div id="coverflowContainer">
+
+    <div style="display:flex; align-items:center; justify-content:center;">
+        <span id="prevPhoto">⬅</span>
+
+        <div id="coverflowTrack"></div>
+
+        <span id="nextPhoto">➡</span>
+    </div>
+
+    <div id="photoTitle"></div>
+    <div id="photoDesc"></div>
+
+</div>
+
+<!-- MUSIC PLAYER (unchanged) -->
+<div id="musicNote" style="display:none; font-size:18px; margin-bottom:10px;">
     every song here is a work in progress and will be uploaded to streaming services soon &lt;3
 </div>
 
-<!-- MUSIC PLAYER -->
 <div id="musicPlayer" style="display:none; flex-direction:column; align-items:center; font-size:22px; margin-top:20px;">
     <div style="display:flex; align-items:center; gap:20px;">
         <span id="prevSong" class="option" style="cursor:pointer;">⬅</span>
@@ -181,56 +302,68 @@ my dog's name :)
     </audio>
 </div>
 
-<!-- PHOTOS -->
-<div id="photoViewer">
-    <div style="display:flex; align-items:center; gap:20px;">
-        <span id="prevPhoto" class="option" style="cursor:pointer;">⬅</span>
-        <span id="nextPhoto" class="option" style="cursor:pointer;">➡</span>
-    </div>
-
-    <img id="photoDisplay" src="">
-    <div id="photoTitle"></div>
-    <div id="photoDesc"></div>
-</div>
-
 <script>
     const centerText = document.getElementById("centerText");
     const definition = document.getElementById("definition");
     const options = document.getElementById("options");
     const returnBtn = document.getElementById("returnBtn");
-    const musicNote = document.getElementById("musicNote");
-    const musicPlayer = document.getElementById("musicPlayer");
-    const photoViewer = document.getElementById("photoViewer");
-    const gifBackground = document.getElementById("gifBackground");
+    const clickArrow = document.getElementById("clickArrow");
+    const coverflowTrack = document.getElementById("coverflowTrack");
+    const coverflowContainer = document.getElementById("coverflowContainer");
+    const photoTitle = document.getElementById("photoTitle");
+    const photoDesc = document.getElementById("photoDesc");
+
+    /* Lightbox elements */
+    const lightboxOverlay = document.getElementById("lightboxOverlay");
+    const lightboxImage = document.getElementById("lightboxImage");
+    const lightboxClose = document.getElementById("lightboxClose");
 
     let currentPage = "home";
 
-    /* OPEN MENU */
+    function openLightbox(imgSrc) {
+        lightboxImage.src = imgSrc;
+        lightboxOverlay.style.display = "flex";
+    }
+
+    lightboxClose.onclick = () => {
+        lightboxOverlay.style.display = "none";
+    };
+
+    lightboxOverlay.onclick = (e) => {
+        if (e.target === lightboxOverlay) {
+            lightboxOverlay.style.display = "none";
+        }
+    };
+
+    /* Home → Menu */
     centerText.onclick = () => {
         if (currentPage !== "home") return;
         centerText.style.display = "none";
         definition.style.display = "none";
         options.style.display = "block";
         returnBtn.style.display = "block";
+
+        clickArrow.style.opacity = 0;
         currentPage = "menu";
     };
 
-    /* RETURN BUTTON */
+    /* Return button */
     returnBtn.onclick = () => {
         audioPlayer.pause();
-        gifBackground.style.opacity = 0;
+
+        if (currentPage === "photos") {
+            coverflowContainer.style.display = "none";
+            options.style.display = "block";
+            clickArrow.style.opacity = 0;
+            currentPage = "menu";
+            return;
+        }
 
         if (currentPage === "music") {
             musicPlayer.style.display = "none";
             musicNote.style.display = "none";
             options.style.display = "block";
-            currentPage = "menu";
-            return;
-        }
-
-        if (currentPage === "photos") {
-            photoViewer.style.display = "none";
-            options.style.display = "block";
+            clickArrow.style.opacity = 0;
             currentPage = "menu";
             return;
         }
@@ -240,28 +373,99 @@ my dog's name :)
             definition.style.display = "block";
             options.style.display = "none";
             returnBtn.style.display = "none";
+            clickArrow.style.opacity = 1;
             currentPage = "home";
         }
     };
 
+    /* PHOTO DATA */
+    const photos = [
+        {
+            title: "Houndsune Miku",
+            file: "houndsune%20miku.jpg",
+            desc: "September 9, 2024. Friend had made this at school"
+        },
+        {
+            title: "we working on projects...",
+            file: "IMG_1305.jpg",
+            desc: "September 16, 2025. Image used in \"a delvers journey\" music video"
+        },
+        {
+            title: "steps to the light",
+            file: "stepstothelight.jpg",
+            desc: "December 28, 2019. Additionally, it is a cover for one of my albums"
+        }
+    ];
+
+    let cIndex = 0;
+
+    function renderCoverFlow() {
+        coverflowTrack.innerHTML = "";
+
+        let leftIndex = (cIndex - 1 + photos.length) % photos.length;
+        let rightIndex = (cIndex + 1) % photos.length;
+
+        const leftImg = document.createElement("img");
+        leftImg.src = photos[leftIndex].file;
+        leftImg.className = "coverItem leftItem";
+
+        const centerImg = document.createElement("img");
+        centerImg.src = photos[cIndex].file;
+        centerImg.className = "coverItem centerItem";
+        centerImg.style.cursor = "pointer";
+        centerImg.onclick = () => openLightbox(photos[cIndex].file);
+
+        const rightImg = document.createElement("img");
+        rightImg.src = photos[rightIndex].file;
+        rightImg.className = "coverItem rightItem";
+
+        coverflowTrack.appendChild(leftImg);
+        coverflowTrack.appendChild(centerImg);
+        coverflowTrack.appendChild(rightImg);
+
+        photoTitle.innerText = photos[cIndex].title;
+        photoDesc.innerText = photos[cIndex].desc;
+    }
+
+    /* Open photos */
+    document.getElementById("photos").onclick = () => {
+        options.style.display = "none";
+        coverflowContainer.style.display = "flex";
+        clickArrow.style.opacity = 0;
+        renderCoverFlow();
+        currentPage = "photos";
+    };
+
+    document.getElementById("prevPhoto").onclick = () => {
+        cIndex = (cIndex - 1 + photos.length) % photos.length;
+        renderCoverFlow();
+    };
+
+    document.getElementById("nextPhoto").onclick = () => {
+        cIndex = (cIndex + 1) % photos.length;
+        renderCoverFlow();
+    };
+
     /* MUSIC */
     const musicBtn = document.getElementById("music");
+    const musicPlayer = document.getElementById("musicPlayer");
+    const musicNote = document.getElementById("musicNote");
     const audioPlayer = document.getElementById("audioPlayer");
     const songTitle = document.getElementById("songTitle");
 
     const tracks = [
-        { 
-            title: "And It Shall (Draft #1)", 
+        {
+            title: "And It Shall (Draft #1)",
             file: "and%20it%20shall%20(draft%20%231).mp3",
             bg: "https://33.media.tumblr.com/a9527dc80ee138b03af638e1bceb75f5/tumblr_nmeg7225F11qg39ewo1_500.gif"
         },
-        { 
-            title: "Story of My Life", 
+        {
+            title: "Story of My Life",
             file: "storyofmylife_2.mp3",
             bg: "https://i.pinimg.com/originals/7a/63/d4/7a63d4c91a83613b8088c9cde3f3ceaf.gif"
         },
-        { 
-            title: "MMM (Other Version)", 
+        {
+            title: "MMM (Other Version)",
             file: "mmm_2otherversion.mp3",
             bg: "mmmbackground.gif"
         }
@@ -275,27 +479,16 @@ my dog's name :)
         audioPlayer.load();
 
         gifBackground.style.opacity = 0;
-
         if (tracks[i].bg) {
             gifBackground.style.backgroundImage = `url('${tracks[i].bg}')`;
         }
     }
 
-    audioPlayer.onplay = () => {
-        if (tracks[index].bg) {
-            gifBackground.style.opacity = 0.4;
-        }
-    };
-
-    audioPlayer.onpause = () => {
-        gifBackground.style.opacity = 0;
-    };
-
     musicBtn.onclick = () => {
         options.style.display = "none";
-        returnBtn.style.display = "block";
         musicPlayer.style.display = "flex";
         musicNote.style.display = "block";
+        clickArrow.style.opacity = 0;
         loadTrack(index);
         currentPage = "music";
     };
@@ -310,45 +503,9 @@ my dog's name :)
         loadTrack(index);
     };
 
-    /* PHOTOS */
-    const photoBtn = document.getElementById("photos");
-    const photoDisplay = document.getElementById("photoDisplay");
-    const photoTitle = document.getElementById("photoTitle");
-    const photoDesc = document.getElementById("photoDesc");
+    audioPlayer.onplay = () => { gifBackground.style.opacity = 0.4; };
+    audioPlayer.onpause = () => { gifBackground.style.opacity = 0; };
 
-    const photos = [
-        { 
-          title: "Houndsune Miku", 
-          file: "houndsune%20miku.jpg", 
-          desc: "September 9, 2024. Friend had made this at school" 
-        }
-    ];
-
-    let pIndex = 0;
-
-    function loadPhoto(i) {
-        photoDisplay.src = photos[i].file;
-        photoTitle.innerText = photos[i].title;
-        photoDesc.innerText = photos[i].desc;
-    }
-
-    photoBtn.onclick = () => {
-        options.style.display = "none";
-        returnBtn.style.display = "block";
-        photoViewer.style.display = "flex";
-        loadPhoto(pIndex);
-        currentPage = "photos";
-    };
-
-    document.getElementById("prevPhoto").onclick = () => {
-        pIndex = (pIndex - 1 + photos.length) % photos.length;
-        loadPhoto(pIndex);
-    };
-
-    document.getElementById("nextPhoto").onclick = () => {
-        pIndex = (pIndex + 1) % photos.length;
-        loadPhoto(pIndex);
-    };
 </script>
 
 </body>
